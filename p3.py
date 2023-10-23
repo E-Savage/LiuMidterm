@@ -29,7 +29,7 @@ def setup_page_table_and_bitmap():
     with open(PAGE_TABLE_FILENAME, "r") as file:
         for i, line in enumerate(file):
             frame_number, valid_bit = map(int, line.split())
-            if valid_bit == 1:
+            if valid_bit == 1 or (0 <= frame_number >= (PHYSICAL_ADDRESS_SIZE // PAGE_SIZE)):
                 bitmap[frame_number] = 1 # when it happens upon a frame that is full the zero is switched to 1
                 inverse_page_table.append(Frame(i, valid_bit, frame_number))
 
