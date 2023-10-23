@@ -48,6 +48,7 @@ def display_page_table():
 def get_free_frame():
     print("page fault occurs", end='')
     for i in range(len(inverse_page_table)):
+        print(i)
         if inverse_page_table[i].valid == 0:
             inverse_page_table[i].valid = 1
             bitmap[i] = 1
@@ -60,9 +61,17 @@ def access_page_table(page_number):
     
     for i in range(len(inverse_page_table)):
         if inverse_page_table[i].page_num == page_number:
-            return int(inverse_page_table[i].page_num)
-    
-   return get_free_frame()
+            return inverse_page_table[i].frame_num
+    freeFrame = get_free_frame()
+
+    inverse_page_table[freeFrame].frame_num = freeFrame
+    inverse_page_table[freeFrame].page_num = page_number
+    inverse_page_table[freeFrame].valid = 1
+
+    return freeFrame
+
+
+
 
 # this function checks the bitmap for 0's we just try to access it but we never try to check it before altering it
 def check_bitmap():
@@ -92,7 +101,16 @@ try:
             offset = virtual_address % PAGE_SIZE
 
             frame_number = access_page_table(page_number)
-            print(f"\nthe frame number is {frame_number}")
+
+            print(f"\nframe number: {frame_number}")
+            print(f"\nthe length is: {len(inverse_page_table)}")
+            
+            """
+            inverse_page_table[frame_number].valid = 1
+            inverse_page_table[frame_number].page_num = page_number
+            inverse_page_table[frame_number].frame_num = frame_number
+            """
+
             physical_address = inverse_page_table[frame_number].frame_num * PAGE_SIZE + offset 
 
             print(f"Page number: {page_number}")
