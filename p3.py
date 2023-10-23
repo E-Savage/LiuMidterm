@@ -1,4 +1,4 @@
-=import sys
+import sys
 import random
 
 # Constants for address sizes
@@ -36,11 +36,9 @@ def setup_page_table_and_bitmap():
 
 def display_page_table():
     print(bitmap)
-    print("Current page table")
-    for i in range(len(page_table)):
-        frame_number, valid_bit = page_table[i]
-        validity = "Valid  (1)" if valid_bit == 1 else "Invalid (0)"
-        print(f"\tPage {i}:\tFrame{frame_number}\t{validity}")
+    print("Current Invese Page Table")
+    for i in range(len(inverse_page_table)):
+        print(f"\tFrame {inverse_page_table[i].index}:\tPage: {inverse_page_table[i].page_num}\tValid: {inverse_page_table[i].valid}")
 
 def get_free_frame():
     print("page fault occurs", end='')
