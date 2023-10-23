@@ -11,14 +11,16 @@ PAGE_TABLE_FILENAME = "ece565f23Q2P3.txt"
 DEBUG = True
 
 class Frame:
-    def __init__(self, page_num, valid, index):
+    def __init__(self, page_num, valid, frame_num):
         self.page_num = page_num
         self.valid = valid
-        self.index = index
+        self.frame_num = frame_num
+
+    
 
 # Global variables
 page_table = []
-inverse_page_table = []
+inverse_page_table = [0 for i in range(2 ** PHYSICAL_ADDRESS_SIZE // PAGE_SIZE)]
 bitmap = [0 for i in range(2 ** PHYSICAL_ADDRESS_SIZE // PAGE_SIZE)] # sets all frames to 0 because right now they are all free and have not been instantiated
 running = True
 
@@ -29,21 +31,25 @@ def setup_page_table_and_bitmap():
     with open(PAGE_TABLE_FILENAME, "r") as file:
         for i, line in enumerate(file):
             frame_number, valid_bit = map(int, line.split())
-            if valid_bit == 1 or (0 <= frame_number >= (PHYSICAL_ADDRESS_SIZE // PAGE_SIZE) - 1):
+            if valid_bit == 1:
                 bitmap[frame_number] = 1 # when it happens upon a frame that is full the zero is switched to 1
-                inverse_page_table.append(Frame(i, valid_bit, frame_number))
-
+                inverse_page_table[frame_number] = Frame(i, valid_bit, frame_number)
+    
+    for i in range(len(inverse_page_table)):
+        if inverse_page_table[i] == 0:
+            inverse_page_table[i] = Frame(0, 0, i)
 
 def display_page_table():
     print(bitmap)
     print("Current Invese Page Table")
     for i in range(len(inverse_page_table)):
-        print(f"\tFrame {inverse_page_table[i].index}:\tPage: {inverse_page_table[i].page_num}\tValid: {inverse_page_table[i].valid}")
+        print(f"\tFrame: {i}\tPage: {inverse_page_table[i].page_num}\tValid: {inverse_page_table[i].valid}")
 
 def get_free_frame():
     print("page fault occurs", end='')
-    for i, value in enumerate(bitmap):
-        if value == 0:
+    for i in range(len(inverse_page_table)):
+        if inverse_page_table[i].valid == 0:
+            inverse_page_table[i].valid = 1
             bitmap[i] = 1
             return i
         
@@ -51,13 +57,12 @@ def get_free_frame():
     exit(0)
 
 def access_page_table(page_number):
-    frame_number, valid_bit = page_table[page_number]
-    if valid_bit == 0:
-        frame_number = get_free_frame()
-        bitmap[frame_number] = 1
-        page_table[page_number] = [frame_number, 1]
-        display_page_table()
-    return frame_number
+    
+    for i in range(len(inverse_page_table)):
+        if inverse_page_table[i].page_num == page_number:
+            return int(inverse_page_table[i].page_num)
+    
+   return get_free_frame()
 
 # this function checks the bitmap for 0's we just try to access it but we never try to check it before altering it
 def check_bitmap():
@@ -76,7 +81,7 @@ try:
             virtual_address = int(input(f"Enter an {VIRTUAL_ADDRESS_SIZE}-bit virtual address (0-{LARGEST_VA_VALUE}):"))
         else:
             virtual_address = generate_virtual_address()
-        print(f"Virtual Address = {virtual_address}")
+        print(f"\nVirtual Address = {virtual_address}")
 
         check_bitmap()
 
@@ -87,7 +92,8 @@ try:
             offset = virtual_address % PAGE_SIZE
 
             frame_number = access_page_table(page_number)
-            physical_address = frame_number * PAGE_SIZE + offset 
+            print(f"\nthe frame number is {frame_number}")
+            physical_address = inverse_page_table[frame_number].frame_num * PAGE_SIZE + offset 
 
             print(f"Page number: {page_number}")
             print(f"Frame number: {frame_number}")
