@@ -41,14 +41,13 @@ def setup_page_table_and_bitmap():
 
 def display_page_table():
     print(bitmap)
-    print("Current Invese Page Table")
+    print("Current Inverse Page Table")
     for i in range(len(inverse_page_table)):
         print(f"\tFrame: {i}\tPage: {inverse_page_table[i].page_num}\tValid: {inverse_page_table[i].valid}")
 
 def get_free_frame():
-    print("page fault occurs", end='')
+    print("page fault occurs\n", end='')
     for i in range(len(inverse_page_table)):
-        print(i)
         if inverse_page_table[i].valid == 0:
             inverse_page_table[i].valid = 1
             bitmap[i] = 1
@@ -102,21 +101,12 @@ try:
 
             frame_number = access_page_table(page_number)
 
-            print(f"\nframe number: {frame_number}")
-            print(f"\nthe length is: {len(inverse_page_table)}")
-            
-            """
-            inverse_page_table[frame_number].valid = 1
-            inverse_page_table[frame_number].page_num = page_number
-            inverse_page_table[frame_number].frame_num = frame_number
-            """
-
             physical_address = inverse_page_table[frame_number].frame_num * PAGE_SIZE + offset 
 
             print(f"Page number: {page_number}")
             print(f"Frame number: {frame_number}")
             print(f"Physical address: {physical_address}")
-            print(bitmap)
+            print(f"Bitmap: {bitmap}")
             #get_free_frame() this should have been check bitmap, i get it now 
 
         else:
